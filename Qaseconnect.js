@@ -1,24 +1,65 @@
 import fetch from 'node-fetch'
 import jmespath from 'jmespath'
+
 import * as dotenv from 'dotenv' // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
 dotenv.config()
 
+
+let projectCode;
+
 const API_KEY = process.env.QASE_API_KEY;
-console.log(API_KEY);
-const QASE_URL = "https://api.qase.io/v1/project?limit=10&offset=0";
+const QASE_BASE_URL = 'https://api.qase.io/v1/';
 
-async function ConnectToQase(API_KEY, URL){
+const options = {
+    method: 'GET',
+    headers: {accept: 'application/json', Token: API_KEY}
+  };
 
-    const options = {
-        method: 'GET',
-        headers: {accept: 'application/json', Token: API_KEY}
-      };
+//Projects
+async function getProjects(URL){
+    URL = `${URL}project?limit=10&offset=0`
       
-      let response = await fetch(URL, options)
+      let response = await fetch(URL, options);
       response = await response.json();
 
-      const filtered_response = jmespath.search(response, "result.entities");
-      console.log(filtered_response)
+      projectCode = jmespath.search(response, "result.entities[1].code");
 }
 
-ConnectToQase(API_KEY, QASE_URL);
+//Get Project By code
+async function getProjectByCode(){
+    URL = `https://api.qase.io/v1/project/${projectCode}`
+    let projectResponse = await fetch(URL, options);
+    projectResponse = await projectResponse.json(); 
+}
+
+//Get All Test Runs
+async function getAllRuns(){
+    URL = `https://api.qase.io/v1/run/${projectCode}`
+    let allRunsResponse = await fetch(URL, options);
+    allRunsResponse = await allRunsResponse.json();
+    let runsOnQase = jmespath.search(allRunsResponse, "result.entities");
+    console.log(runsOnQase);
+}
+
+//Create a new Test Run
+async function createNewRun(){
+
+}
+
+//Get a specific test run
+async function getSpecificTestRun(){
+
+}
+
+//Complete a specific test run
+async function completeTestRun(){
+
+}
+
+
+
+await getProjects(QASE_BASE_URL);
+
+await getProjectByCode();
+
+await getAllRuns()
